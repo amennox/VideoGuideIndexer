@@ -1,1 +1,76 @@
-echo -e "__pycache__/\n*.pyc\nenv/\n.venv/\n.temp/\ntemp/\n*.log\n*.sqlite3\n.DS_Store" > .gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.cache/
+*.log
+*.sqlite3
+
+# Virtual environment
+.env/
+.venv/
+env/
+ENV/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Mac OS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Test/coverage/output
+coverage/
+.tox/
+.nox/
+dist/
+build/
+*.egg-info/
+htmlcov/
+.eggs/
+.pytest_cache/
+
+# Output dirs (docs, temp, artifacts)
+outputs/
+temp/
+outputs/markdown/
+outputs/pdf/
+
+# Docker
+*.pid
+*.seed
+docker-compose.override.yml
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Frontend 
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Reports
+*.pdf
+*.md
+
+# System files
+Thumbs.db
+desktop.ini
+
+# Binaries
+*.so
+*.dll
+*.dylib
+*.exe
+
+# Others 
+*.bak
+*.tmp
+*.swp

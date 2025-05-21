@@ -1,0 +1,65 @@
+[
+  {
+    "interval": {
+      "start": 0,
+      "end": 60
+    },
+    "fulltext": "Il screenshot mostra una finestra di dialogo con un titolo che sembra essere \"Impostazioni\". All'interno del dialogo, si possono vedere diverse opzioni di menu e pulsanti, tra cui \"Corsi\", \"Attività\", \"Impostazioni\", \"Salvataggio\", e \"Chiudi\". Inoltre, ci sono campi di testo e pulsanti di conferma per l'aggiunta di nuove attività o modifiche esistenti. La struttura suggerisce che si tratta di un'applicazione di pianificazione di corsi di fitness, dove l'utente può creare e gestire lezioni individuali o gruppi di lezioni.",
+    "screenshots": [
+      {
+        "image": "frame_00000_0.jpg",
+        "description": "La schermata mostra una interfaccia utente di un'applicazione chiamata \"Sportrick\". La barra superiore contiene il logo dell'applicazione e un menu con opzioni come \"Front Office\", \"Controllo Accessi\", \"Report\", \"Planning\", \"Strutture\", \"Impianificazione\", \"Impostazioni\", \"CRM e Marketing\". Sotto il menu, ci sono sezioni per \"Impostazioni Generali\", \"Attività\", \"Valori Elenchi\", \"Profilo\", \"Gestione Utenti\", \"Tipi Certificato Medico\", \"Gestione Rilevazioni\", \"Tipi Pagamento\", \"Numeratori Documenti\", \"Documenti\", \"Tasse\", \"Gestione Contabilità\" e \"Registratori di Cassa\". La parte inferiore della schermata mostra un link per \"video tutorial sportrick.com\". La schermata sembra essere quella di un pannello di controllo o di configurazione dell'applicazione."
+      }
+    ]
+  },
+  {
+    "interval": {
+      "start": 60,
+      "end": 120
+    },
+    "fulltext": "Il screenshot mostra una finestra di dialogo con un titolo che sembra essere \"Aggiungi attività generica\". All'interno del dialogo, ci sono campi di testo per inserire il nome dell'attività generica e un pulsante per confermare l'aggiunta. Sotto il campo di testo per il nome, c'è un messaggio di avviso che dice: \"Attenzione perché il colore scelto sarà un colore unico per tutto il planning colorali dei corsi.\" Sotto il messaggio di avviso, c'è un altro pulsante per confermare l'aggiunta. In basso, ci sono ulteriori istruzioni per creare livelli all'interno dell'attività generica, con un riferimento a impostazioni, valori e l'enchi.",
+    "screenshots": [
+      {
+        "image": "frame_00001_60.jpg",
+        "description": "La schermata mostra una interfaccia utente di un'applicazione chiamata SPORTRICK. Si trova in una pagina di gestione delle attività, con un menu principale in alto che include opzioni come \"Front Office\", \"Controllo Accessi\", \"Report\", \"Planning\", \"Strutture\", \"Pianificazione\" e \"Impostazioni\". Sotto il menu, ci sono sezioni per la ricerca e l'aggiunta di attività, con campi per \"Nome\", \"Codice\", \"Vendibile da web\" e \"Web\". In basso, ci sono pulsanti per navigare tra le pagine precedente, successiva, ultima e indietro. La pagina sembra essere una sezione di configurazione o gestione delle attività all'interno del sistema SPORTRICK."
+      },
+      {
+        "image": "frame_00002_65.jpg",
+        "description": "La schermata mostra una finestra di dialogo all'interno di un'applicazione chiamata \"Sportrick\". La finestra di dialogo contiene campi di testo per \"Nome\" e \"Codice\", con un pulsante \"OK\" e un pulsante \"ANNULLA\" in basso. Sul lato sinistro, c'è una barra laterale con opzioni come \"Gestione Attività\", \"Attività\", \"Mostra\", \"10\", \"Nome\", \"Codice\", \"Colore\", e \"AGGIUNGI\". In alto, c'è un menu principale con opzioni come \"E-COMMERCE\", \"STATISTICO\", \"ALTRO\", e \"INFO\". Sul lato destro, si vedono pulsanti per \"AGGIUNGI\", \"ELIMINA\", e \"INDIETRO\". La barra di navigazione in alto mostra il titolo dell'applicazione \"Sportrick\" e un indirizzo web. La finestra di dialogo è attiva e sembra essere utilizzata per la creazione o l'aggiornamento di un'attività."
+      },
+      {
+        "image": "frame_00003_90.jpg",
+        "description": "La schermata mostra una interfaccia utente di un'applicazione chiamata \"Sportrick\". La barra superiore contiene il logo dell'applicazione e un menu con opzioni come \"Front Office\", \"Controllo Accessi\", \"Report\", \"Planning\", \"Strutture\", \"Pianificazione\" e \"Importazioni\". Sotto il menu, ci sono sezioni per \"Impostazioni\", \"Attività\", \"Valori Elenchi\", \"Profilo\", \"Gestione Utenti\", \"Tipi Certificato Medico\", \"Tipi Pagamento\", \"Numeratori Documenti\", \"Documenti\", \"Tasse\", \"Gestione Tipo di Pagamento\", \"Gestione Autorizzati Documenti\", \"Registratori di Cassa\", \"CRM e Marketing\". La schermata sembra essere quella di un pannello di gestione o di configurazione dell'applicazione."
+      },
+      {
+        "image": "frame_00004_95.jpg",
+        "description": "La schermata mostra una interfaccia utente di un'applicazione chiamata \"Sportrick\". La barra superiore contiene il logo dell'applicazione e un menu con opzioni come \"Front Office\", \"Controllo Accessi\", \"Report\", \"Planning\", \"Strutture\", \"Panificazione\" e \"Impostazioni\". Sotto il menu, ci sono sezioni per \"Livelli\", \"Sotto Livelli\", \"Posizione\", \"Marca\", \"Causali di Pagamento\". Sul lato sinistro, c'è un menu verticale con opzioni come \"Mostra\", \"Livello\", \"Front\", \"Avanzato\", \"Base\", \"CrossFit\". Sul lato destro, si trova una tabella con colonne per \"Sportrick\", \"Elenco dei livelli\", \"Assegnare il valore alla nuova voce di elenco\", \"Aggiungi\", \"OK\", \"Annulla\", \"Elimina\", \"Modifica\". La tabella contiene diverse attività come \"Gag\", \"Granchietto\", \"Intermedio\", \"Kickboxing\", \"Fitness\", \"Nuoto Bambini\", \"Nuoto Adulti\". Le opzioni \"Modifica\" e \"Elimina\" sono presenti per ogni attività."
+      }
+    ]
+  },
+  {
+    "interval": {
+      "start": 120,
+      "end": 180
+    },
+    "fulltext": "Non è possibile fornire una descrizione del layout visivo o degli elementi UI senza il testo o l'immagine originale.",
+    "screenshots": [
+      {
+        "image": "frame_00005_135.jpg",
+        "description": "La schermata mostra un'applicazione di pianificazione di attività sportive. Sul lato sinistro si trova una colonna di date, con il 5 ottobre 2020 evidenziato. Sopra di essa, ci sono le opzioni \"Today\" e \"5 ottobre 2020\". Sotto la colonna di date, ci sono diversi blocchi orizzontali che rappresentano le attività pianificate per quel giorno. Ogni blocco contiene un numero e un nome di attività, come \"ZUMBA\" e \"PILATES\". In alto, ci sono menu e pulsanti per navigare tra \"Day\", \"Work Week\", \"Week\", \"Month\" e \"Timeline\". In alto a sinistra, c'è un titolo che sembra riferirsi a \"Corso - Pianificazione Sport\"."
+      },
+      {
+        "image": "frame_00006_160.jpg",
+        "description": "La schermata mostra una interfaccia utente di un'applicazione chiamata \"Sportrick\". La barra superiore contiene il logo dell'applicazione e un menu con opzioni come \"Front Office\", \"Controllo Accessi\", \"Report\", \"Planning\", \"Strutture\", \"Pianificazione\" e \"Impostazioni\". Sotto il menu, ci sono ulteriori opzioni come \"Base\", \"Abbonamenti\", \"Servizi\", \"Wallets\", \"Multipacks\", \"Promozioni\", \"Proshop\", \"Listini\", \"CORSO\", \"Riepilogo Corsi\", \"Modelli Recupero\" e \"Vendita\". La schermata sembra essere focalizzata sul modulo di pianificazione di corsi, con campi per selezionare la stagione, l'attività, il periodo, e la collocazione. Sono presenti pulsanti gialli per confermare le selezioni. La struttura e l'area sono in fase di compilazione."
+      },
+      {
+        "image": "frame_00007_165.jpg",
+        "description": "La schermata mostra una finestra di pianificazione di un'attività fitness. Si trova su un sito web, evidenziando un periodo specifico (dal 01/09/2020 al 31/08/2021) e una sezione per la collocazione. \n\n- **Titolo**: \"Stagione Fitness 2020/2021\" e \"FITNESS\".\n- **Bottoni**: \"CONFERMA\" in giallo.\n- **Sezione principale**: \"PERIODO\" con un campo per selezionare l'anno e un campo per selezionare il mese.\n- **Sezione secondaria**: \"COLLOCAZIONE\" con un campo per selezionare la struttura e un campo per selezionare l'area.\n- **Opzioni**: \"OPZIONI PRINCIPALI\", \"OPZIONI SECONDARIE\", \"ALTRI COLLOCAMENTI\".\n- **Campo di input**: \"Ora Inizio\", \"Durata in minuti\", \"ORA AVANTI\", \"Capienza\".\n- **Elementi interattivi**: Pulsanti per selezionare giorni della settimana (Lunedì, Martedì, Mercoledì, Giovedì, Venerdì, Sabato, Domenica).\n- **Navigazione**: Non si vede una barra di navigazione principale, ma ci sono pulsanti per confermare le selezioni."
+      },
+      {
+        "image": "frame_00008_170.jpg",
+        "description": "La schermata mostra una finestra di configurazione di un'applicazione, probabilmente di tipo di pianificazione o gestione di corsi. Si trova in una pagina web, come indicato dal browser e dall'indirizzo URL. La finestra principale è suddivisa in diversi riquadri e campi di input. \n\n- **Collocazione**: Include campi per selezionare la struttura, l'area, il giorno della settimana, l'ora di inizio e la durata in minuti. Sono presenti anche campi per l'ora anteriore e la capienza.\n\n- **Opzioni principali**: Include un campo per selezionare il livello e altre opzioni secondarie come richiedere un certificato medico, un certificato agonistico o la quota annuale.\n\n- **Controllo Accessi**: Include opzioni per consentire l'accesso utilizzando un certificato o un e-commerce.\n\n- **Conferma**: Un pulsante giallo per confermare le selezioni.\n\nLa finestra sembra essere parte di un processo di pianificazione o di gestione di corsi, con un focus su dettagli di collocazione e accesso."
+      }
+    ]
+  }
+]

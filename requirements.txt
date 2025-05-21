@@ -11,3 +11,5 @@ opencv-python
 reportlab
 fpdf2
 requests
+skimage.metrics
+python-docx
