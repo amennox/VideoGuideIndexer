@@ -1,0 +1,1 @@
+"""Interfaccia per Whisper STT."""

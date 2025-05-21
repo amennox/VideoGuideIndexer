@@ -1,0 +1,1 @@
+"""Connessione e funzioni Elasticsearch."""

@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+whisper
+faster-whisper
+pydantic
+python-dotenv
+elasticsearch
+ffmpeg-python
+pytesseract
+opencv-python
+reportlab
+fpdf2
+requests

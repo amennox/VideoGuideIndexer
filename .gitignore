@@ -1,0 +1,1 @@
+echo -e "__pycache__/\n*.pyc\nenv/\n.venv/\n.temp/\ntemp/\n*.log\n*.sqlite3\n.DS_Store" > .gitignore
