@@ -41,6 +41,8 @@ outputs/
 temp/
 outputs/markdown/
 outputs/pdf/
+frames/
+downloads/
 
 # Docker
 *.pid
@@ -59,6 +61,8 @@ yarn-error.log*
 # Reports
 *.pdf
 *.md
+*.jpg
+*.mp4
 
 # System files
 Thumbs.db

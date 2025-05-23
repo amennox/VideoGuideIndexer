@@ -72,7 +72,18 @@ Segmenti trascritti:
 {fulltext}
 """)
 
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "snowflake-arctic-embed2")
+OLLAMA_EMBED_URL = os.getenv("OLLAMA_EMBED_URL", "http://localhost:11434/api/embed")
+DOCCLIP_API_URL = os.getenv("DOCCLIP_API_URL", "http://localhost:11436/api/embed")
+ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL", "http://localhost:9200")
+ELASTICSEARCH_INDEX = os.getenv("ELASTICSEARCH_INDEX", "snapshot")
 
+TEXT_EMBED_DIM=1024
+IMAGE_EMBED_DIM=512
+
+DEFAULT_BUSINESSID = os.getenv("DEFAULT_BUSINESSID", "znext_0001")
+DEFAULT_ELEMENTID = os.getenv("DEFAULT_ELEMENTID", "1")
+DEFAULT_SCOPE = os.getenv("DEFAULT_SCOPE", "e-learning")
 
 # === VIDEO / AUDIO ===
 MAX_SEGMENT_DURATION = int(os.getenv("MAX_SEGMENT_DURATION", 420))  # seconds
