@@ -27,7 +27,9 @@ def describe_screen_with_ollama(image_path, ocr_text) -> str:
     log.info(f"Sending image {image_path} to Ollama")
     r = requests.post(OLLAMA_URL, json=payload, timeout=300)
     if r.status_code == 200:
-        return r.json().get("response", "").strip()
+        description = r.json().get("response", "").strip()
+        description = description.replace("**", "")
+        return description
     return f"[Ollama Error] Status {r.status_code}: {r.text}"
 
 def split_text_for_ollama(text, max_chars=300_000):

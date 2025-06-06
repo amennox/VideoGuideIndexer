@@ -58,11 +58,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Reports
+# Reports and artifacts
 *.pdf
 *.md
 *.jpg
 *.mp4
+*.docx
+*.json
 
 # System files
 Thumbs.db

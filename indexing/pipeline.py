@@ -6,7 +6,7 @@ import logging
 
 log = logging.getLogger("indexing.pipeline")
 
-# Configurazioni chiave (puoi spostare su config.py se preferisci)
+# Configurazioni chiave (da spostare su config.py)
 MIN_SEGMENT_LEN = 180    # sec
 MAX_SEGMENT_LEN = 420    # sec
 SILENCE_LEN = 5.0        # sec
@@ -182,6 +182,6 @@ def extract_frame_time_from_filename(fname: str) -> int:
     return int(m.group(1)) if m else 0
 
 if __name__ == "__main__":
-    video_path = Path(r"C:\Progetti\VideoGuide\downloads\sr.mp4")
-    output_json = Path("indicizzazione_output.json")
+    video_path = Path(r"C:\Progetti\VideoGuide\downloads\CREAZIONE_MODELLO_DOCUMENTO.mp4")
+    output_json = Path("indicizzazione_output_CREAZIONE_MODELLO_DOCUMENTO.json")
     index_video(video_path, output_json)

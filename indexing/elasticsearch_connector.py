@@ -33,6 +33,9 @@ def get_image_embedding(image_path):
     resp = requests.post(DOCCLIP_API_URL, json=payload, timeout=120)
     resp.raise_for_status()
     embedding = resp.json().get("embeddings", [[]])[0]
+    # LOG: dimensione effettiva
+    log.info(f"Image embedding length: {len(embedding)}")
+    log.info(f"First 5 embedding vect values: {embedding[:5]}")
     return embedding
 
 
@@ -51,7 +54,7 @@ def knn_search(image_path: Path, text: str = None, k: int = 10):
             "script_score": {
                 "query": {"match_all": {}},
                 "script": {
-                    "source": "cosineSimilarity(params.query_vector, 'imagevect') + 1.0",
+                    "source": "cosineSimilarity(params.query_vector, 'imageVect') + 1.0",
                     "params": {"query_vector": image_embedding}
                 }
             }

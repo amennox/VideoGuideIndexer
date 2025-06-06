@@ -16,7 +16,9 @@
         </div>
         <div class="mb-3">
             <button id="captureBtn" class="btn btn-secondary">Cattura schermo</button>
-            <button id="sendBtn" class="btn btn-primary">Invia</button>
+            <label for="fileInput" class="btn btn-outline-secondary ms-2">Carica immagine</label>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <button id="sendBtn" class="btn btn-primary ms-2">Invia</button>
         </div>
         <div class="mb-3">
             <img id="preview" style="max-width: 300px; display: none;" />
@@ -27,25 +29,25 @@
     <script>
         let capturedBlob = null, fileId = null;
 
+        // SCREENSHOT BUTTON
         document.getElementById('captureBtn').onclick = async function () {
-            // Usa Screen Capture API
             let stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             let track = stream.getVideoTracks()[0];
             let imageCapture = new ImageCapture(track);
             let bitmap = await imageCapture.grabFrame();
 
-            // Converte in canvas
             let canvas = document.createElement('canvas');
             canvas.width = bitmap.width;
             canvas.height = bitmap.height;
             let ctx = canvas.getContext('2d');
             ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
-            // Blob (jpeg) e preview
             canvas.toBlob(async blob => {
                 capturedBlob = blob;
+                // Preview
                 document.getElementById('preview').src = URL.createObjectURL(blob);
                 document.getElementById('preview').style.display = '';
+                // Upload to server
                 let formData = new FormData();
                 formData.append("file", blob, "screenshot.jpg");
                 let res = await fetch('/upload', { method: 'POST', body: formData });
@@ -61,10 +63,27 @@
             track.stop();
         };
 
+        // FILE INPUT (FROM DISK)
+        document.getElementById('fileInput').onchange = async function (e) {
+            let file = e.target.files[0];
+            if (!file) return;
+            capturedBlob = file;
+            // Preview
+            document.getElementById('preview').src = URL.createObjectURL(file);
+            document.getElementById('preview').style.display = '';
+            // Upload to server
+            let formData = new FormData();
+            formData.append("file", file, file.name);
+            let res = await fetch('/upload', { method: 'POST', body: formData });
+            let data = await res.json();
+            fileId = data.file_id;
+        };
+
+        // INVIA BUTTON
         document.getElementById('sendBtn').onclick = async function () {
             let question = document.getElementById('question').value;
             if (!fileId) {
-                alert("Prima cattura uno screenshot!");
+                alert("Carica un'immagine o cattura uno screenshot prima di inviare!");
                 return;
             }
             let res = await fetch('/query', {
@@ -74,6 +93,11 @@
             });
             let data = await res.json();
             document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+        };
+
+        // Allow clicking label to trigger file input
+        document.querySelector('label[for="fileInput"]').onclick = function() {
+            document.getElementById('fileInput').click();
         };
     </script>
 </body>

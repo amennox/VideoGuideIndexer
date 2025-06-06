@@ -218,23 +218,23 @@ def detect_scenes(
 if __name__ == "__main__":
     # Test on a local video or YouTube URL
     video_urls = [
-        "https://www.youtube.com/watch?v=8By43mNELXU",
-        "https://www.youtube.com/watch?v=VBtZoNgJyok",
-        "https://www.youtube.com/watch?v=NgNeossBiwo",
-        "https://www.youtube.com/watch?v=8txXLXPK0oA",
-        "https://www.youtube.com/watch?v=BwycYTuAnGw",
-        "https://www.youtube.com/watch?v=OBZT0nDZJU8",
-        "https://www.youtube.com/watch?v=zGdNsmgYjTQ",
-        "https://www.youtube.com/watch?v=oEKVxgXtiYU",
-        "https://www.youtube.com/watch?v=gibH2Xho3BQ",
-        "https://www.youtube.com/watch?v=xTL1dxa76ro",
-        "https://www.youtube.com/watch?v=a0SJnEf7Gj8",
-        "https://www.youtube.com/watch?v=Dlo6AD-0bB0",
-        "https://www.youtube.com/watch?v=klV0kRUmDVM",
-        "https://www.youtube.com/watch?v=2Nqe2oT6HwU",
-        "https://www.youtube.com/watch?v=sk2luddzKOI",
-        "https://www.youtube.com/watch?v=NOxJLGwV9zc",
-        "https://www.youtube.com/watch?v=0sWj_EOpLUA"
+        #"https://www.youtube.com/watch?v=8By43mNELXU",
+        #"https://www.youtube.com/watch?v=VBtZoNgJyok",
+        #"https://www.youtube.com/watch?v=NgNeossBiwo",
+        #"https://www.youtube.com/watch?v=8txXLXPK0oA",
+        #"https://www.youtube.com/watch?v=BwycYTuAnGw",
+        #"https://www.youtube.com/watch?v=OBZT0nDZJU8",
+        #"https://www.youtube.com/watch?v=zGdNsmgYjTQ",
+        #"https://www.youtube.com/watch?v=oEKVxgXtiYU",
+        #"https://www.youtube.com/watch?v=gibH2Xho3BQ",
+        #"https://www.youtube.com/watch?v=xTL1dxa76ro",
+        #"https://www.youtube.com/watch?v=a0SJnEf7Gj8",
+        "https://www.youtube.com/watch?v=Dlo6AD-0bB0"
+        #"https://www.youtube.com/watch?v=klV0kRUmDVM",
+        #"https://www.youtube.com/watch?v=2Nqe2oT6HwU",
+        #"https://www.youtube.com/watch?v=sk2luddzKOI",
+        #"https://www.youtube.com/watch?v=NOxJLGwV9zc",
+        #"https://www.youtube.com/watch?v=0sWj_EOpLUA"
         
         # aggiungi altre URL qui
     ]
@@ -248,8 +248,8 @@ if __name__ == "__main__":
         print("Downloaded video to:", local_video)
 
         # Estrai audio
-        #wav_path = extract_audio(local_video)
-        #print("Extracted audio to:", wav_path)
+        wav_path = extract_audio(local_video)
+        print("Extracted audio to:", wav_path)
 
         # Estrai frame chiave diversi ogni 5 secondi (o come preferisci)
         frames = extract_diverse_frames(local_video, interval_s=2, similarity_threshold=0.95)
