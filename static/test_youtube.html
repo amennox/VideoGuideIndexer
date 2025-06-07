@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Keyframe & LLM Trainer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { max-width: 1150px; margin: 3em auto; }
+        .section-title { font-size: 1.35rem; margin-bottom: 0.7em; font-weight: 600; }
+        .textarea-fixed { min-height: 95px; max-height: 160px; }
+        .output-block { min-height: 110px; font-family: monospace; font-size: 0.98em; white-space: pre-wrap; }
+        .vertical-space { min-height: 2.3em; }
+        .card { border-radius: 1.2em; }
+    </style>
+</head>
+<body>
+    <h2 class="mb-4">Indicizza Keyframe &amp; Allena Embedding LLM</h2>
+
+    <!-- RIGA 1: Youtube/Training -->
+    <div class="row gx-3 mb-4">
+        <div class="col-md-6 p-2">
+            <div class="card p-3 h-100">
+                <div class="section-title">Estrai snapshot da Youtube</div>
+                <form id="form-youtube" autocomplete="off">
+                    <div class="mb-2">
+                        <label for="youtube_urls" class="form-label">YouTube URLs (uno per riga)</label>
+                        <textarea id="youtube_urls" class="form-control textarea-fixed" rows="2" required placeholder="https://www.youtube.com/watch?v=..."></textarea>
+                    </div>
+                    <div class="mb-2 row g-2 align-items-end">
+                        <div class="col-md-6">
+                            <label for="scope-list-yt" class="form-label mb-0">Scope</label>
+                            <select id="scope-list-yt" class="form-select" required>
+                                <option value="">Caricamento...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="businessId-yt" class="form-label mb-0">Business ID</label>
+                            <input type="text" id="businessId-yt" class="form-control" value="test_business">
+                        </div>
+                    </div>
+                    <div class="form-check mt-1 mb-2">
+                        <input class="form-check-input" type="checkbox" id="auto-train-yt">
+                        <label class="form-check-label" for="auto-train-yt">
+                            Lancia addestramento LLM
+                        </label>
+                    </div>
+                    <div class="d-grid mb-2">
+                        <button type="submit" class="btn btn-primary">Estrai snapshot da Youtube</button>
+                    </div>
+                    <div class="progress mb-2" style="height:2em;">
+                        <div id="progress-bar-yt" class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width:0%">0%</div>
+                    </div>
+                    <div id="status-yt" class="text-secondary vertical-space"></div>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6 p-2">
+            <div class="card p-3 h-100">
+                <div class="section-title">Addestramento LLM Embedding</div>
+                <div class="mb-2">
+                    <label for="scope-list-train" class="form-label">Configurazione di sistema</label>
+                    <select id="scope-list-train" class="form-select" required>
+                        <option value="">Seleziona Scope...</option>
+                    </select>
+                </div>
+                <div class="d-grid mb-2">
+                    <button id="btn-train-llm" type="button" class="btn btn-success">Addestra LLM Embedding</button>
+                </div>
+                <div class="progress mb-2" style="height:2em;">
+                    <div id="train-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width:0%">0%</div>
+                </div>
+                <div id="train-status" class="text-secondary vertical-space"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGA 2: Utilities -->
+    <div class="row gx-3">
+        <!-- Test Embedding FineTuning -->
+        <div class="col-md-6 p-2">
+            <div class="card p-3 h-100">
+                <div class="mb-2 fw-bold">Test Embedding FineTuning</div>
+                <form id="form-embed-imgs" autocomplete="off">
+                    <div class="mb-2">
+                        <label for="embed-img-file1" class="form-label">Scegli immagine 1</label>
+                        <input type="file" accept="image/*" class="form-control" id="embed-img-file1" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="embed-img-file2" class="form-label">Scegli immagine 2</label>
+                        <input type="file" accept="image/*" class="form-control" id="embed-img-file2" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="scope-list-embed" class="form-label">Scope</label>
+                        <select id="scope-list-embed" class="form-select" required>
+                            <option value="">Seleziona Scope...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">Test Similarità Embedding</button>
+                </form>
+                <label class="mt-3 small">Cosine Similarity:</label>
+                <input class="form-control output-block mb-2" readonly id="embedding-sim-output"></input>
+            </div>
+        </div>
+        <!-- Test Prompt Immagine -->
+        <div class="col-md-6 p-2">
+            <div class="card p-3 h-100">
+                <div class="mb-2 fw-bold">Test Prompt Immagine</div>
+                <form id="form-prompt-img" autocomplete="off">
+                    <div class="mb-2">
+                        <input type="file" accept="image/*" class="form-control" id="prompt-img-file" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="prompt-txt" class="form-label">Prompt</label>
+                        <textarea id="prompt-txt" class="form-control textarea-fixed" required placeholder="Scrivi qui il prompt per Ollama..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">Invia a Ollama</button>
+                </form>
+                <label class="mt-3 small">Risposta modello:</label>
+                <textarea class="form-control output-block" readonly id="prompt-output"></textarea>
+            </div>
+        </div>
+    </div>
+
+<script>
+const API_SCOPES = "http://localhost:5209/Configuration/scopes";
+const API_YT = "/youtube_to_ftimages/";
+const API_TRAIN = "/train_embeddings/";
+const API_EMBED = "http://localhost:8000/api/embed";
+const OLLAMA_URL = "http://localhost:11434/api/generate";
+
+
+function fillSelect(id, scopes) {
+    let sel = document.getElementById(id);
+    sel.innerHTML = scopes.length ?
+        scopes.map(s => `<option value="${s.id}">${s.name}</option>`).join('') :
+        `<option value="">Nessuno scope trovato</option>`;
+}
+
+// ---- Sezione 1: Estrazione da Youtube ----
+const formYT = document.getElementById('form-youtube');
+const progBarYT = document.getElementById('progress-bar-yt');
+const statusYT = document.getElementById('status-yt');
+const btnTrainLLM = document.getElementById('btn-train-llm');
+const progBarTrain = document.getElementById('train-bar');
+const trainStatus = document.getElementById('train-status');
+
+formYT.onsubmit = function(e) {
+    e.preventDefault();
+    progBarYT.style.width = '0%'; progBarYT.textContent = '0%';
+    statusYT.textContent = '';
+    let urls = document.getElementById('youtube_urls').value.trim().split('\n').filter(u => u.trim());
+    let scope = document.getElementById('scope-list-yt').value;
+    let businessId = document.getElementById('businessId-yt').value;
+    let autoTrain = document.getElementById('auto-train-yt').checked;
+    if (!urls.length || !scope || !businessId) {
+        statusYT.innerHTML = "<span class='text-danger'>Compila tutti i campi.</span>";
+        return;
+    }
+    // Uno alla volta, poi auto addestra se richiesto
+    let idx = 0;
+    function next() {
+        if (idx >= urls.length) {
+            if (autoTrain) doTrainLLM(scope);
+            return;
+        }
+        fetchYT(urls[idx++], scope, businessId, next);
+    }
+    next();
+};
+
+function fetchYT(url, scope, businessId, cb) {
+    statusYT.innerHTML = "Estrazione in corso...";
+    fetch(API_YT, {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ youtube_url: url, businessId, scope })
+    }).then(response => {
+        if (!response.body || response.status !== 200) {
+            statusYT.innerHTML = "<span class='text-danger'>Errore API Youtube</span>";
+            progBarYT.classList.remove('bg-info'); progBarYT.classList.add('bg-danger');
+            cb && cb();
+            return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        function readChunk() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    progBarYT.textContent = "Finito!";
+                    statusYT.innerHTML = "<span class='text-success'>Operazione completata!</span>";
+                    cb && cb();
+                    return;
+                }
+                buffer += decoder.decode(value, {stream: true});
+                let parts = buffer.split('\n\n');
+                buffer = parts.pop();
+                for (const part of parts) {
+                    if (!part.trim().startsWith('data:')) continue;
+                    try {
+                        const payload = JSON.parse(part.replace(/^data:\s*/, ''));
+                        if (payload.error) {
+                            statusYT.innerHTML = `<span class='text-danger'>${payload.error}</span>`;
+                            progBarYT.classList.remove('bg-info'); progBarYT.classList.add('bg-danger');
+                            cb && cb();
+                            return;
+                        }
+                        if (payload.progress !== undefined) {
+                            progBarYT.style.width = payload.progress + "%";
+                            progBarYT.textContent = payload.progress + "%";
+                            let msg = '';
+                            if (payload.stage) msg = "Fase: " + payload.stage;
+                            statusYT.innerHTML = "<span class='small'>" + msg + "</span>";
+                        }
+                    } catch(e) {
+                        statusYT.innerHTML = `<span class='text-danger'>Errore parsing risposta API.</span>`;
+                    }
+                }
+                readChunk();
+            });
+        }
+        readChunk();
+    }).catch(err => {
+        statusYT.innerHTML = `<span class='text-danger'>Errore: ${err}</span>`;
+        progBarYT.classList.remove('bg-info'); progBarYT.classList.add('bg-danger');
+        cb && cb();
+    });
+}
+
+// ---- Addestra LLM Embedding (seconda colonna) ----
+btnTrainLLM.onclick = function() {
+    let scope = document.getElementById('scope-list-train').value;
+    if (!scope) {
+        trainStatus.innerHTML = "<span class='text-danger'>Seleziona uno scope!</span>";
+        return;
+    }
+    doTrainLLM(scope);
+};
+function doTrainLLM(scope) {
+    progBarTrain.style.width = '0%'; progBarTrain.textContent = '0%';
+    trainStatus.innerHTML = 'Avvio addestramento...';
+    fetch(API_TRAIN, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ scope })
+    }).then(response => {
+        if (!response.body || response.status !== 200) {
+            trainStatus.innerHTML = "<span class='text-danger'>Errore training embedding.</span>";
+            progBarTrain.classList.remove('bg-success'); progBarTrain.classList.add('bg-danger');
+            return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        function readChunk() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    progBarTrain.textContent = "Finito!";
+                    trainStatus.innerHTML = "<span class='text-success'>Training completato!</span>";
+                    return;
+                }
+                buffer += decoder.decode(value, {stream: true});
+                let parts = buffer.split('\n\n');
+                buffer = parts.pop();
+                for (const part of parts) {
+                    if (!part.trim().startsWith('data:')) continue;
+                    try {
+                        const payload = JSON.parse(part.replace(/^data:\s*/, ''));
+                        if (payload.progress !== undefined) {
+                            progBarTrain.style.width = payload.progress + "%";
+                            progBarTrain.textContent = payload.progress + "%";
+                            if(payload.info) trainStatus.innerHTML = "<span class='small'>" + payload.info + "</span>";
+                        }
+                    } catch(e) {
+                        trainStatus.innerHTML = `<span class='text-danger'>Errore parsing risposta training.</span>`;
+                    }
+                }
+                readChunk();
+            });
+        }
+        readChunk();
+    }).catch(err => {
+        trainStatus.innerHTML = `<span class='text-danger'>Errore: ${err}</span>`;
+        progBarTrain.classList.remove('bg-success'); progBarTrain.classList.add('bg-danger');
+    });
+}
+
+// ---- Test Embedding FineTuning ----
+
+// ---- Test Prompt Immagine ----
+document.getElementById('form-prompt-img').onsubmit = async function(e) {
+    e.preventDefault();
+    let fileInput = document.getElementById('prompt-img-file');
+    let promptTxt = document.getElementById('prompt-txt').value;
+    let out = document.getElementById('prompt-output');
+    out.value = 'Attendere...';
+    if (!fileInput.files.length || !promptTxt.trim()) {
+        out.value = 'Scegli un\'immagine e scrivi un prompt!';
+        return;
+    }
+    let file = fileInput.files[0];
+    let reader = new FileReader();
+    reader.onload = async function() {
+        let base64 = reader.result.split(',')[1];
+        let resp = await fetch(OLLAMA_URL, {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                model: "gemma3:4b",    // Puoi parametrizzare
+                prompt: promptTxt,
+                images: [base64],
+                stream: false
+            })
+        });
+        let data = await resp.json();
+        out.value = data && data.response ? data.response : (data.error || "Errore API Ollama.");
+    };
+    reader.readAsDataURL(file);
+};
+
+// ---- Load all scopes at start ----
+async function loadScopes() {
+    try {
+        let resp = await fetch("http://localhost:5209/Configuration/scopes");
+        let data = await resp.json();
+        let scopes = data.map(s => ({id: s.scopeId, name: s.name}));
+        for (let sel of [ "scope-list-yt", "scope-list-train", "scope-list-embed" ])
+            fillSelect(sel, scopes);
+    } catch (e) {
+        for (let sel of [ "scope-list-yt", "scope-list-train", "scope-list-embed" ])
+            fillSelect(sel, []);
+    }
+}
+function fillSelect(id, scopes) {
+    let sel = document.getElementById(id);
+    sel.innerHTML = scopes.length ?
+        scopes.map(s => `<option value="${s.id}">${s.name}</option>`).join('') :
+        `<option value="">Nessuno scope trovato</option>`;
+}
+loadScopes();
+
+// ---- Test Similarità Embedding FineTuning ----
+document.getElementById('form-embed-imgs').onsubmit = async function(e) {
+    e.preventDefault();
+    let file1 = document.getElementById('embed-img-file1').files[0];
+    let file2 = document.getElementById('embed-img-file2').files[0];
+    let scope = document.getElementById('scope-list-embed').value;
+    let out = document.getElementById('embedding-sim-output');
+    out.value = 'In elaborazione...';
+    if (!file1 || !file2 || !scope) {
+        out.value = 'Seleziona due immagini e uno scope!';
+        return;
+    }
+    let form = new FormData();
+    form.append('scope', scope);
+    form.append('immagine1', file1);
+    form.append('immagine2', file2);
+    let resp = await fetch("http://localhost:8000/test_embeddings", {
+        method: "POST",
+        body: form
+    });
+    let data = await resp.json();
+    if(data.cosine_similarity !== undefined) {
+        out.value = data.cosine_similarity.toFixed(5);
+    } else {
+        out.value = data.detail || data.error || "Errore API.";
+    }
+};
+
+</script>
+</body>
+</html>

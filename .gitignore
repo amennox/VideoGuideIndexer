@@ -43,6 +43,7 @@ outputs/markdown/
 outputs/pdf/
 frames/
 downloads/
+models/
 
 # Docker
 *.pid
@@ -65,6 +66,8 @@ yarn-error.log*
 *.mp4
 *.docx
 *.json
+*.pth
+
 
 # System files
 Thumbs.db

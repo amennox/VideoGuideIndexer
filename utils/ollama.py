@@ -9,21 +9,28 @@ import logging
 
 log = logging.getLogger("utils.ollama")
 
-def describe_screen_with_ollama(image_path, ocr_text) -> str:
+def describe_screen_with_ollama(image_path, ocr_text, prompt=None) -> str:
     """
     Sends image + OCR text to Ollama (Gemma3:4b) for a structured screenshot description.
+    If 'prompt' is not provided, uses the default prompt from config.
     """
     with open(image_path, "rb") as f:
         image_b64 = base64.b64encode(f.read()).decode()
-    # Build prompt from config, replacing {ocr_text}
-    prompt = OLLAMA_SCREENSHOT_PROMPT.replace("{ocr_text}", ocr_text)
+
+    # Usa il prompt passato, oppure quello di default (da config) con {ocr_text} sostituito
+    if prompt is None:
+        from core.config import OLLAMA_SCREENSHOT_PROMPT
+        used_prompt = OLLAMA_SCREENSHOT_PROMPT.replace("{ocr_text}", ocr_text)
+    else:
+        used_prompt = prompt
+
     payload = {
         "model": OLLAMA_LLM_MODEL,
-        "prompt": prompt,
+        "prompt": used_prompt,
         "images": [image_b64],
         "stream": False
     }
-    
+
     log.info(f"Sending image {image_path} to Ollama")
     r = requests.post(OLLAMA_URL, json=payload, timeout=300)
     if r.status_code == 200:
