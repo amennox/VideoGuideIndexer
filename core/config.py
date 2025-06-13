@@ -55,7 +55,7 @@ Il tuo compito è:
 - Non usare formati markdown
 """)
 
-OLLAMA_SCREENSHOT_PROMPT = os.getenv("OLLAMA_SCREENSHOT_PROMPT", """
+OLLAMA_SCREENSHOT_PROMPT_SR = os.getenv("OLLAMA_SCREENSHOT_PROMPT", """
 Descrivi la schermata software elencando solo gli elementi dell’interfaccia utente (UI) e le loro funzioni, senza riferimenti visivi o commenti generali.
 Elenca le funzioni presenti nel menu principale (barra blu in alto), tipicamente contiene le sezioni di navigazione principali del gestionale, ognuna rappresentata da un’etichetta testuale o icona (es. Front-Office, Controllo Accessi, Report, Planning, Istruttore, Pianificazione, Impostazioni).
 Elenca le funzioni presenti nel menu secondario (barra grigia sotto il menu principale), tipicamente mostra le opzioni contestuali della sezione selezionata, con etichette testuali e icone (es. Rubrica, Proshop, Servizi, Dashboard CRM, Agenda Utenti, Giftcard/Coupon).
@@ -64,6 +64,18 @@ Descrivi dettagliatamente il contenuto del corpo centrale, tipicamente contiene 
 Per il corpo centrale elenca tutti i principali elementi di UI trovati e il contenuto del testo dei bottoni presenti e delle caselle di testo cercando di spiegarne l'uso nel contesto della maschera.
 
 Non includere riferimenti al nome del software. Ignora elementi in basso o sulla barra nera.
+Non usare il formato markdown, non usare i tag HTML, non usare le virgolette o asterischi *, non aggiungere valutazioni o tue spiegazioni.
+La descrizione deve essere oggettiva, strutturata e funzionale all’individuazione degli oggetti UI e delle loro funzioni, senza spiegazioni aggiuntive.
+""")
+
+#WORDPRESS
+OLLAMA_SCREENSHOT_PROMPT = os.getenv("OLLAMA_SCREENSHOT_PROMPT", """
+Descrivi la schermata software cms WORDPRESS elencando solo gli elementi dell’interfaccia utente (UI) e le loro funzioni, senza riferimenti visivi o commenti generali.
+Elenca le funzioni presenti nel menu principale (barra in alto e a sinistra), tipicamente contiene le sezioni di navigazione principali del cms, ognuna rappresentata da un’etichetta testuale o icona 
+Descrivi dettagliatamente il contenuto del corpo centrale, tipicamente contiene il pannello funzionale della maschera. Cerca di identificare gli elementi più importanti come: elenco utenti, impostazione documento.
+Per il corpo centrale elenca tutti i principali elementi di UI trovati e il contenuto del testo dei bottoni presenti e delle caselle di testo cercando di spiegarne l'uso nel contesto della maschera.
+
+Non includere riferimenti al nome del software. Ignora elementi circa la versione del software, barre degli indirizzi web.
 Non usare il formato markdown, non usare i tag HTML, non usare le virgolette o asterischi *, non aggiungere valutazioni o tue spiegazioni.
 La descrizione deve essere oggettiva, strutturata e funzionale all’individuazione degli oggetti UI e delle loro funzioni, senza spiegazioni aggiuntive.
 """)

@@ -15,6 +15,12 @@ from core.config import (
     TEXT_EMBED_DIM,
     IMAGE_EMBED_DIM
 )
+import os
+import torch
+from PIL import Image
+from io import BytesIO
+import open_clip
+import numpy as np
 
 import logging
 
@@ -109,6 +115,44 @@ def index_embeddings_from_pipeline(output_json_path):
                 log.info(f"Elastic Indexed: {imageurl}")
             except Exception as e:
                 log.error(f"Failed to index {imageurl}: {e}")
+                
+EMBED_MODEL_CACHE = {}
+
+def get_ftimage_embedding(scope: str, image_input):
+    """
+    Computes embedding for an image using the fine-tuned model for the given scope.
+    - image_input: path to file (str/Path) or a file-like object (with .read())
+    Returns: embedding numpy array.
+    """
+    log.info(f"Getting image embedding for scope '{scope}' from {image_input}")
+    model_path = f"./ft_images_{scope}.pth"
+    if not os.path.isfile(model_path):
+        log.error(f"Model file not found for scope '{scope}': {model_path}")
+        raise FileNotFoundError(f"Model for scope '{scope}' not found: {model_path}")
+    if scope not in EMBED_MODEL_CACHE:
+        model_name = "ViT-B-32"
+        model, preprocess, _ = open_clip.create_model_and_transforms(model_name)
+        state_dict = torch.load(model_path, map_location="cpu")
+        model.load_state_dict(state_dict)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = model.to(device)
+        model.eval()
+        EMBED_MODEL_CACHE[scope] = (model, preprocess, device)
+    model, preprocess, device = EMBED_MODEL_CACHE[scope]
+    # Determina se image_input è path o file-like
+    if hasattr(image_input, "read"):
+        # file-like
+        image_data = image_input.read()
+        image = Image.open(BytesIO(image_data)).convert("RGB")
+    else:
+        # path
+        image = Image.open(image_input).convert("RGB")
+    with torch.no_grad():
+        image_tensor = preprocess(image).unsqueeze(0).to(device)
+        img_feat = model.encode_image(image_tensor)
+        emb = img_feat.cpu().numpy()[0]
+    log.info(f"Image embedding computed for {image_input} (dim={len(emb)})")
+    return emb
 
 if __name__ == "__main__":
     import sys

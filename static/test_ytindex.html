@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Indicizza Video Tutorial – ytindex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { max-width: 700px; margin: 3em auto; }
+        .section-title { font-size: 1.25rem; font-weight: 600; }
+        .progress { height: 2em; }
+        .vertical-space { min-height: 2.3em; }
+        .card { border-radius: 1.2em; }
+        #output { font-family: monospace; font-size: 1em; min-height: 2em; white-space: pre-wrap;}
+    </style>
+</head>
+<body>
+    <div class="card shadow p-4 mb-5">
+        <h2 class="mb-4 text-primary section-title">Test Indicizzazione Video Tutorial</h2>
+        <form id="ytindex-form" autocomplete="off">
+            <div class="mb-3">
+                <label class="form-label">Seleziona modalità di input video</label>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="mode" id="radio-url" value="url" checked>
+                  <label class="form-check-label" for="radio-url">YouTube URL</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="mode" id="radio-file" value="file">
+                  <label class="form-check-label" for="radio-file">Carica File Video</label>
+                </div>
+            </div>
+            <div id="input-url-block" class="mb-3">
+                <label for="youtube_url" class="form-label">YouTube URL</label>
+                <input type="url" class="form-control" id="youtube_url" name="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+            <div id="input-file-block" class="mb-3" style="display:none;">
+                <label for="video_file" class="form-label">Seleziona File Video</label>
+                <input type="file" class="form-control" id="video_file" name="file" accept="video/*">
+            </div>
+            <div class="mb-3">
+                <label for="scope" class="form-label">Scope</label>
+                <select id="scope" name="scope" class="form-select" required>
+                    <option value="">Caricamento scopes...</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="videotitle" class="form-label">Titolo</label>
+                <input type="text" class="form-control" id="videotitle" name="videotitle" placeholder="Titolo del video.">
+            </div>
+            <input type="hidden" name="businessId" value="ssense_0001">
+            <div class="d-grid mb-2">
+                <button type="submit" class="btn btn-primary">Indicizza Video</button>
+            </div>
+            <div class="progress mb-2" style="display:none;">
+                <div id="progress-bar" class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width:0%">0%</div>
+            </div>
+            <div id="status" class="text-secondary vertical-space"></div>
+            <div id="output" class="mt-2"></div>
+        </form>
+    </div>
+
+<script>
+const API_SCOPES = "http://localhost:5209/Configuration/scopes";
+const API_YTINDEX = "/ytindex";
+
+// Switch input tipo (url/file)
+document.getElementById('radio-url').onchange = showCorrectInput;
+document.getElementById('radio-file').onchange = showCorrectInput;
+function showCorrectInput() {
+    let mode = document.querySelector('input[name="mode"]:checked').value;
+    document.getElementById('input-url-block').style.display = mode === "url" ? "" : "none";
+    document.getElementById('input-file-block').style.display = mode === "file" ? "" : "none";
+}
+
+// Popola select scope
+async function loadScopes() {
+    try {
+        let resp = await fetch(API_SCOPES);
+        let data = await resp.json();
+        let scopes = data.map(s => ({id: s.scopeId, name: s.name}));
+        let sel = document.getElementById('scope');
+        sel.innerHTML = scopes.length ?
+            scopes.map(s => `<option value="${s.id}">${s.name}</option>`).join('') :
+            `<option value="">Nessuno scope trovato</option>`;
+    } catch(e) {
+        document.getElementById('scope').innerHTML = `<option value="">Errore caricamento scopes</option>`;
+    }
+}
+loadScopes();
+
+const form = document.getElementById('ytindex-form');
+const progBlock = document.querySelector('.progress');
+const progBar = document.getElementById('progress-bar');
+const status = document.getElementById('status');
+const output = document.getElementById('output');
+
+form.onsubmit = function(e) {
+    e.preventDefault();
+    output.textContent = '';
+    progBlock.style.display = '';
+    progBar.style.width = "0%";
+    progBar.textContent = "0%";
+    status.textContent = "";
+
+    let mode = document.querySelector('input[name="mode"]:checked').value;
+    let scope = document.getElementById('scope').value;
+    let businessId = "ssense_0001";
+    let videotitle = document.getElementById('videotitle').value;
+    let formData = new FormData();
+    formData.append('scope', scope);
+    formData.append('businessId', businessId);
+    formData.append('videotitle', videotitle);
+
+    if (mode === "url") {
+        let url = document.getElementById('youtube_url').value.trim();
+        if (!url) {
+            status.innerHTML = "<span class='text-danger'>Inserisci una URL valida!</span>";
+            return false;
+        }
+        formData.append('youtube_url', url);
+    } else {
+        let fileInput = document.getElementById('video_file');
+        if (!fileInput.files.length) {
+            status.innerHTML = "<span class='text-danger'>Scegli un file video!</span>";
+            return false;
+        }
+        formData.append('file', fileInput.files[0]);
+    }
+
+    // Invio con fetch (SSE)
+    fetch(API_YTINDEX, {
+        method: "POST",
+        body: formData
+    }).then(response => {
+        if (!response.body || response.status !== 200) {
+            status.innerHTML = "<span class='text-danger'>Errore chiamata API!</span>";
+            progBar.classList.remove('bg-info'); progBar.classList.add('bg-danger');
+            return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        function readChunk() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    progBar.textContent = "Finito!";
+                    status.innerHTML = "<span class='text-success'>Operazione completata!</span>";
+                    return;
+                }
+                buffer += decoder.decode(value, {stream: true});
+                let parts = buffer.split('\n\n');
+                buffer = parts.pop();
+                for (const part of parts) {
+                    if (!part.trim().startsWith('data:')) continue;
+                    try {
+                        const payload = JSON.parse(part.replace(/^data:\s*/, ''));
+                        if (payload.error) {
+                            status.innerHTML = `<span class='text-danger'>${payload.error}</span>`;
+                            progBar.classList.remove('bg-info'); progBar.classList.add('bg-danger');
+                            return;
+                        }
+                        if (payload.progress !== undefined) {
+                            progBar.style.width = payload.progress + "%";
+                            progBar.textContent = payload.progress + "%";
+                        }
+                        if (payload.stage) {
+                            status.innerHTML = "<span class='small'>Fase: " + payload.stage + "</span>";
+                        }
+                        if (payload.video_id) {
+                            output.textContent = "Video indicizzato con ID: " + payload.video_id;
+                        }
+                    } catch(e) {
+                        status.innerHTML = `<span class='text-danger'>Errore parsing risposta API.</span>`;
+                    }
+                }
+                readChunk();
+            });
+        }
+        readChunk();
+    }).catch(err => {
+        status.innerHTML = `<span class='text-danger'>Errore: ${err}</span>`;
+        progBar.classList.remove('bg-info'); progBar.classList.add('bg-danger');
+    });
+    return false;
+};
+</script>
+</body>
+</html>

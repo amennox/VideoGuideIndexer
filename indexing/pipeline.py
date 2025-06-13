@@ -148,10 +148,11 @@ def index_video(
 
         screenshots = []
         for frame_path in segment_frames:
-            log.info(f"Frame OCR {video_path} (start={start}, duration={end})")
-            ocr_text = extract_text_from_image(frame_path)
-            log.info(f"Frame describe by Ollama {video_path} (start={start}, duration={end})")
-            description = describe_screen_with_ollama(frame_path, ocr_text)
+            #log.info(f"Frame OCR {video_path} (start={start}, duration={end})")
+            #ocr_text = extract_text_from_image(frame_path)
+            #log.info(f"Frame describe by Ollama {video_path} (start={start}, duration={end})")
+            #description = describe_screen_with_ollama(frame_path, ocr_text)
+            description="snapshot"
             screenshots.append({
                 "image": frame_path.name,
                 "description": description

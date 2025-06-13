@@ -18,6 +18,7 @@ import open_clip
 import os
 import numpy as np
 import asyncio
+import subprocess
 
 # Model cache for loaded models (keyed by scope name)
 EMBED_MODEL_CACHE = {}
@@ -29,25 +30,31 @@ from indexing.video_processing import download_youtube_video, extract_keyframes
 from indexing.training_img_embedding import fine_tune_openclip_from_ftimages
 from utils.ollama import describe_screen_with_ollama
 from indexing.ocr import extract_text_from_image
+from indexing.import_server import import_elements_from_json
 
+from indexing.embedding_generation import get_ftimage_embedding
 
+from indexing.pipeline import index_video
+from core.config import TEMP_DIR, DOWNLOADS_DIR
+
+#uvicorn api.youtube_to_ftimages:app --host 0.0.0.0 --port 8000 --reload
 
 # Config personalizzata
 DEFAULT_PROMPT = """
-Descrivi la schermata software elencando solo gli elementi dell’interfaccia utente (UI) e le loro funzioni, senza riferimenti visivi o commenti generali.
-Elenca le funzioni presenti nel menu principale (barra blu in alto), tipicamente contiene le sezioni di navigazione principali del gestionale, ognuna rappresentata da un’etichetta testuale o icona (es. Front-Office, Controllo Accessi, Report, Planning, Istruttore, Pianificazione, Impostazioni).
-Elenca le funzioni presenti nel menu secondario (barra grigia sotto il menu principale), tipicamente mostra le opzioni contestuali della sezione selezionata, con etichette testuali e icone (es. Rubrica, Proshop, Servizi, Dashboard CRM, Agenda Utenti, Giftcard/Coupon).
+Descrivi la schermata software cms WORDPRESS elencando solo gli elementi dell’interfaccia utente (UI) e le loro funzioni, senza riferimenti visivi o commenti generali.
+Elenca le funzioni presenti nel menu principale (barra in alto e a sinistra), tipicamente contiene le sezioni di navigazione principali del cms, ognuna rappresentata da un’etichetta testuale o icona 
 Descrivi dettagliatamente il contenuto del corpo centrale, tipicamente contiene il pannello funzionale della maschera. Cerca di identificare gli elementi più importanti come: elenco utenti, impostazione documento.
 Per il corpo centrale elenca tutti i principali elementi di UI trovati e il contenuto del testo dei bottoni presenti e delle caselle di testo cercando di spiegarne l'uso nel contesto della maschera.
-Non includere riferimenti al nome del software. Ignora elementi in basso o sulla barra nera.
+
+Non includere riferimenti al nome del software. Ignora elementi circa la versione del software, barre degli indirizzi web.
 Non usare il formato markdown, non usare i tag HTML, non usare le virgolette o asterischi *, non aggiungere valutazioni o tue spiegazioni.
 La descrizione deve essere oggettiva, strutturata e funzionale all’individuazione degli oggetti UI e delle loro funzioni, senza spiegazioni aggiuntive.
 """
 
 FTIMAGES_ENDPOINT = "http://localhost:5209/ftimages"
 
-logger = logging.getLogger("api.youtube_to_ftimages")
-logger.setLevel(logging.INFO)
+log = logging.getLogger("api.youtube_to_ftimages")
+log.setLevel(logging.INFO)
 
 class YouTubeToFTImagesRequest(BaseModel):
     scope: str
@@ -184,20 +191,7 @@ async def embed_image(request: EmbedRequest):
     model_path = f"./ft_images_{scope}.pth"
     if not os.path.isfile(model_path):
         return {"error": f"Model file for scope '{scope}' not found: {model_path}"}
-    # Load model from cache if present, else load it and cache
-    if scope not in EMBED_MODEL_CACHE:
-        try:
-            model_name = "ViT-B-32"
-            model, preprocess, _ = open_clip.create_model_and_transforms(model_name)
-            state_dict = torch.load(model_path, map_location="cpu")
-            model.load_state_dict(state_dict)
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            model = model.to(device)
-            model.eval()
-            EMBED_MODEL_CACHE[scope] = (model, preprocess, device)
-        except Exception as e:
-            return {"error": f"Could not load fine-tuned model: {e}"}
-    model, preprocess, device = EMBED_MODEL_CACHE[scope]
+
     # Accept both a single string or list of strings
     imgs = request.input if isinstance(request.input, list) else [request.input]
     embeddings = []
@@ -207,44 +201,23 @@ async def embed_image(request: EmbedRequest):
             if item.startswith("data:image"):
                 item = item.split(",", 1)[1]
             image_data = base64.b64decode(item)
-            image = Image.open(BytesIO(image_data)).convert("RGB")
         except Exception as e:
             return {"error": f"Invalid base64 image at position {idx}: {e}"}
         try:
-            with torch.no_grad():
-                image_tensor = preprocess(image).unsqueeze(0).to(device)
-                img_feat = model.encode_image(image_tensor)
-                emb = img_feat.cpu().numpy()[0]
+            emb = get_ftimage_embedding(scope, BytesIO(image_data))
+            # sempre lista di float
+            embeddings.append([float(x) for x in emb.tolist()] if hasattr(emb, "tolist") else [float(emb)])
         except Exception as e:
             return {"error": f"Error encoding image at position {idx}: {e}"}
-        embeddings.append(emb.tolist())
+        #embeddings.append(list(emb) if hasattr(emb, "__iter__") else emb)
     return {"embeddings": embeddings, "model": scope}
 
 def get_ftimage_embedding_from_file(scope: str, file: UploadFile):
     """
     Calcola embedding immagine usando modello fine-tuning relativo allo scope.
     """
-    model_path = f"./ft_images_{scope}.pth"
-    if not os.path.isfile(model_path):
-        raise HTTPException(status_code=404, detail=f"Model for scope '{scope}' not found: {model_path}")
-    # Cache modello per efficienza
-    if scope not in EMBED_MODEL_CACHE:
-        model_name = "ViT-B-32"
-        model, preprocess, _ = open_clip.create_model_and_transforms(model_name)
-        state_dict = torch.load(model_path, map_location="cpu")
-        model.load_state_dict(state_dict)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        model = model.to(device)
-        model.eval()
-        EMBED_MODEL_CACHE[scope] = (model, preprocess, device)
-    model, preprocess, device = EMBED_MODEL_CACHE[scope]
-    # Leggi l'immagine da UploadFile
-    image_data = file.file.read()
-    image = Image.open(BytesIO(image_data)).convert("RGB")
-    with torch.no_grad():
-        image_tensor = preprocess(image).unsqueeze(0).to(device)
-        img_feat = model.encode_image(image_tensor)
-        emb = img_feat.cpu().numpy()[0]
+    emb = get_ftimage_embedding(scope, file.file)
+
     return emb
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
@@ -269,3 +242,185 @@ async def test_embeddings(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
     return {"cosine_similarity": sim}
+
+class YTIndexRequest(BaseModel):
+    youtube_url: str = None
+    scope: str
+    businessId: str = "ssense_0001"
+
+# --- Utility SSE ---
+def sse(progress, stage, info=None, extra=None):
+    payload = {"progress": progress, "stage": stage}
+    if info: payload["info"] = info
+    if extra: payload.update(extra)
+    return f"data: {json.dumps(payload)}\n\n"
+
+# --- ENDPOINT YTINDEX CON PROGRESS SSE ---
+@app.post("/ytindex")
+async def ytindex(
+    scope: str = Form(...),
+    videotitle : str = Form(...), 
+    businessId: str = Form("ssense_0001"),
+    youtube_url: str = Form(None),
+    file: UploadFile = File(None), # Il parametro UploadFile
+):
+    # Dobbiamo leggere il contenuto del file *immediatamente* se presente,
+    # prima che qualsiasi altra cosa possa chiudere il flusso.
+    uploaded_file_content = None
+    if file is not None:
+        try:
+            # Leggi tutto il contenuto del file in memoria come bytes
+            # Questo è il punto critico dove si verifica l'errore.
+            # Se fallisce ancora qui, significa che il file è chiuso prima ancora
+            # che l'esecuzione entri nel blocco try della funzione generator().
+            uploaded_file_content = await file.read()
+            log.info(f"Successfully read {len(uploaded_file_content)} bytes from uploaded file.")
+        except Exception as e:
+            log.error(f"FATAL: Could not read uploaded file content: {e}", exc_info=True)
+            # Dato che questo è un errore critico prima di iniziare il generator,
+            # lo restituiamo direttamente come JSONResponse.
+            return JSONResponse(
+                {"error": f"Impossibile leggere il file caricato all'inizio: {str(e)}"}, 
+                status_code=500
+            )
+
+    async def generator():
+        log.info("Generator start for /ytindex")
+        
+        temp_files_to_clean = [] 
+        local_video_path = None 
+
+        try:
+            if youtube_url:
+                # Caso: URL YouTube
+                yield sse(5, "downloading_video", "Scaricamento video da YouTube")
+                downloaded_path = download_youtube_video(youtube_url)
+                local_video_path = Path(downloaded_path)
+                temp_files_to_clean.append(local_video_path)
+                log.info(f"Video downloaded from YouTube: {local_video_path}")
+
+            elif uploaded_file_content is not None:
+                # Caso: File caricato (il contenuto è già in uploaded_file_content)
+                yield sse(5, "saving_file", "Salvataggio file caricato")
+                
+                unique_filename = f"{os.urandom(8).hex()}_{file.filename}" # Usa file.filename dall'oggetto UploadFile
+                local_video_path = TEMP_DIR / unique_filename
+                
+                # Scrivi il contenuto (già letto in memoria) sul disco
+                try:
+                    with open(local_video_path, "wb") as buffer:
+                        buffer.write(uploaded_file_content)
+                    log.info(f"Uploaded file content saved to: {local_video_path}")
+                    temp_files_to_clean.append(local_video_path)
+                except Exception as e:
+                    log.error(f"Error writing uploaded file content to disk: {e}", exc_info=True)
+                    yield sse(-1, "error", f"Errore nello scrivere il file caricato su disco: {str(e)}")
+                    return 
+
+            else:
+                # Nessun URL YouTube o file fornito
+                log.error("No video source provided (youtube_url or file).")
+                yield sse(-1, "error", "Fornire un URL YouTube o caricare un file video.")
+                return
+
+            if not local_video_path or not local_video_path.exists():
+                log.error(f"Local video file does not exist after initial processing: {local_video_path}")
+                yield sse(-1, "error", "Impossibile accedere al file video salvato per l'elaborazione.")
+                return
+
+
+            yield sse(15, "uploading_media", "Upload video su /Media/upload")
+            with open(local_video_path, "rb") as f:
+                files = {"File": f}
+                data = {"FolderType": "videos"}
+                resp = requests.post("http://localhost:5209/Media/upload", files=files, data=data)
+
+            if resp.status_code != 200:
+                log.error(f"Error uploading video to /Media/upload (Status: {resp.status_code}, Response: {resp.text})")
+                yield sse(-1, "error", f"Errore upload su Media: {resp.status_code} - {resp.text}")
+                return
+
+            resp_json = resp.json()
+            video_url = resp_json.get("url")
+            if not video_url:
+                log.error("No URL found in Media upload response.")
+                yield sse(-1, "error", "Errore: URL video non trovato nella risposta di Media upload.")
+                return
+            
+            id_chunk = Path(video_url).stem
+
+            yield sse(35, "indexing", "Esecuzione pipeline indicizzazione")
+            json_output_path = TEMP_DIR / f"{id_chunk}_index.json"
+            log.info(f"Indexing video ID: {id_chunk} from {local_video_path} to JSON: {json_output_path}")
+            
+            index_video(local_video_path, json_output_path)
+            temp_files_to_clean.append(json_output_path)
+
+            yield sse(75, "importing", "Import elementi via import_server.py")
+            import_elements_from_json(str(json_output_path), id_chunk, scope, businessId,videotitle, log=log)
+
+            yield sse(100, "done", "Processo completato!", extra={"video_id": id_chunk})
+            yield f"data: {json.dumps({'success': True, 'video_id': id_chunk})}\n\n"
+
+        except Exception as e:
+            log.error(f"General process error in /ytindex: {str(e)}", exc_info=True)
+            yield sse(-1, "error", f"Si è verificato un errore inaspettato durante l'elaborazione: {str(e)}")
+        finally:
+            #for f_path in temp_files_to_clean:
+            #    try:
+            #        if f_path and f_path.exists():
+            #            f_path.unlink()
+            #            log.info(f"Cleaned up temporary file: {f_path}")
+            #    except Exception as clean_e:
+            #        log.warning(f"Failed to clean up temporary file {f_path}: {clean_e}")
+            log.info("Generator finished and cleaned up.")
+
+    return StreamingResponse(generator(), media_type="text/event-stream")
+
+
+# --- (facoltativo) endpoint ytindex_sync per old client ---
+@app.post("/ytindex_sync")
+async def ytindex_sync(
+    scope: str = Form(...),
+    businessId: str = Form("ssense_0001"),
+    youtube_url: str = Form(None),
+    file: UploadFile = File(None),
+):
+    """
+    Versione tradizionale per chiamate senza SSE (risponde solo a fine processo).
+    """
+    try:
+        # ...stessa logica della generator(), ma senza yield/sse...
+        if youtube_url:
+            local_video = download_youtube_video(youtube_url)
+        elif file is not None:
+            video_path = TEMP_DIR / file.filename
+            with open(video_path, "wb") as f:
+                shutil.copyfileobj(file.file, f)
+            local_video = video_path
+        else:
+            return JSONResponse({"error": "Provide either youtube_url or file"}, status_code=400)
+        with open(local_video, "rb") as f:
+            files = {"File": f}
+            data = {"FolderType": "videos"}
+            resp = requests.post("http://localhost:5209/Media/upload", files=files, data=data)
+        if resp.status_code != 200:
+            return JSONResponse({"error": "Error uploading video to Media"}, status_code=500)
+        resp_json = resp.json()
+        video_url = resp_json.get("url")
+        id_chunk = Path(video_url).stem
+        json_output = TEMP_DIR / f"{id_chunk}_index.json"
+        index_video(local_video, json_output)
+        import_cmd = [
+            "python", "import_server.py", 
+            str(json_output), 
+            "--id_chunk", id_chunk,
+            "--scope", scope,
+            "--business_id", businessId
+        ]
+        result = subprocess.run(import_cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            return JSONResponse({"error": result.stderr}, status_code=500)
+        return {"success": True, "video_id": id_chunk}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
